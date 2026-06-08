@@ -85,10 +85,10 @@
                   </v-chip>
                 </td>
                 <td>
-                  <v-btn icon size="small" variant="outlined" color="warning" class="mr-1" @click="handleClick">
+                  <v-btn icon size="small" variant="outlined" color="warning" class="mr-1" @click="openEdit(item)">
                     <v-icon>mdi-pencil</v-icon>
                   </v-btn>
-                  <v-btn icon size="small" variant="outlined" color="error" @click="handleClick">
+                  <v-btn icon size="small" variant="outlined" color="error" @click="confirmDelete(item)">
                     <v-icon>mdi-delete</v-icon>
                   </v-btn>
                 </td>
@@ -134,16 +134,43 @@
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
+
+    <!-- Edit Dialog -->
+    <EditDialog ref="editDialog" @saved="fetchData" />
+
+    <!-- Delete Confirmation Dialog -->
+    <v-dialog v-model="deleteDialog" max-width="400" persistent>
+      <v-card>
+        <v-card-title class="delete-title">
+          <v-icon color="error" class="mr-2">mdi-alert-circle</v-icon>
+          ยืนยันการลบข้อมูล
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pt-4">
+          ต้องการลบ <strong>{{ deleteTarget?.POSI_NAME_TH }}</strong> ใช่หรือไม่?
+          <br />
+          <span class="text-grey text-caption">รหัส: {{ deleteTarget?.POSI_CODE }}</span>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="outlined" color="grey" @click="deleteDialog = false">ยกเลิก</v-btn>
+          <v-btn color="error" :loading="deleting" @click="deleteItem">ลบ</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
 import axios from 'axios'
+import EditDialog from './Edit.vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
 export default {
   name: 'InComponents',
+  components: { EditDialog },
   data() {
     return {
       searchText: '',
@@ -158,6 +185,9 @@ export default {
       errorMsg: '',
       currentPage: 1,
       pageSize: 5,
+      deleteDialog: false,
+      deleteTarget: null,
+      deleting: false,
     }
   },
   computed: {
@@ -193,9 +223,28 @@ export default {
       this.selectedStatus = ''
       this.fetchData()
     },
-    handleClick() {
-      alert('กดปุ่มแล้ว!')
-    }
+    openEdit(item) {
+      this.$refs.editDialog.open(item)
+    },
+    confirmDelete(item) {
+      this.deleteTarget = item
+      this.deleteDialog = true
+    },
+    async deleteItem() {
+      this.deleting = true
+      try {
+        await axios.delete(`${API_URL}/${this.deleteTarget.POSI_ID}`, {
+          data: { UPDATED_BY: 'user' }
+        })
+        this.deleteDialog = false
+        this.deleteTarget = null
+        await this.fetchData()
+      } catch (err) {
+        alert('ลบไม่สำเร็จ: ' + err.message)
+      } finally {
+        this.deleting = false
+      }
+    },
   }
 }
 </script>
@@ -251,5 +300,11 @@ export default {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.delete-title {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 16px 20px;
 }
 </style>
