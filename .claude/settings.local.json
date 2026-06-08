@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Rename-Item \"c:\\\\Users\\\\arleruau\\\\Desktop\\\\vue\\\\vue101\\\\src\\\\components\\\\HelloWorld.vue\" \"Incomponents.vue\")",
+      "Bash(npm install *)",
+      "Bash(mkdir \"c:\\\\Users\\\\arleruau\\\\Desktop\\\\vue\\\\backend\\\\routes\")",
+      "Bash(mkdir \"c:\\\\Users\\\\arleruau\\\\Desktop\\\\vue\\\\backend\\\\db\")",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(node server.js)",
+      "Bash(Start-Sleep -Seconds 2)",
+      "Bash(Invoke-WebRequest -Uri \"http://localhost:3000/api/mas-position\" -UseBasicParsing)",
+      "Bash(Select-Object -First 5)",
+      "Bash(curl -s \"http://localhost:3000/api/mas-position\")",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)"
+    ]
+  }
+}

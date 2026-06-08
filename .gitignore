@@ -1,0 +1,17 @@
+# Dependencies
+vue101/node_modules/
+backend/node_modules/
+
+# Environment variables (ห้าม push ขึ้น GitHub)
+backend/.env
+
+# Vue build output
+vue101/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
