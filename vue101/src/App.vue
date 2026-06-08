@@ -1,30 +1,17 @@
 <template>
   <v-app>
     <v-main>
-      <v-btn
-        color="primary"
-        style="position: fixed; top: 16px; right: 16px; z-index: 100;"
-        @click="$refs.addDialog.open()"
-      >
-        + เพิ่มข้อมูล
-      </v-btn>
-
-      <AddDialog ref="addDialog" @saved="$refs.incomponents.fetchData()" />
-      <Incomponents ref="incomponents" />
+      <Search />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Incomponents from './components/Incomponents.vue'
-import AddDialog from './components/Add.vue'
+import Search from './components/Search.vue'
 
 export default {
   name: 'App',
-  components: {
-    Incomponents,
-    AddDialog,
-  },
+  components: { Search },
 }
 </script>
 
