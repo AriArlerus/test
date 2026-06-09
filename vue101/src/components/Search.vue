@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { ref } from 'vue'
-import DataTable from './Table.vue'
+import DataTable from './View.vue'
 import AddDialog from './Add.vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
