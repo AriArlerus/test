@@ -32,19 +32,15 @@
           <td>{{ item.POSI_NAME_TH }}</td>
           <td>{{ item.POSI_NAME_EN }}</td>
           <td>
-            <v-chip
-              :color="item.RECORD_STATUS === 'A' ? 'success' : 'error'"
-              variant="outlined"
-              size="small"
-            >
+            <v-chip :color="item.RECORD_STATUS === 'A' ? 'success' : 'error'" variant="outlined" size="small">
               {{ item.RECORD_STATUS === 'A' ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
             </v-chip>
           </td>
           <td>
-            <v-btn icon size="small" variant="outlined" color="warning" class="mr-1" @click="$refs.editDialog.open(item)">
+            <v-btn icon size="small" variant="outlined" color="warning" class="mr-1" @click="editDialog?.open(item)">
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
-            <v-btn icon size="small" variant="outlined" color="error" @click="$refs.deleteDialog.open(item)">
+            <v-btn icon size="small" variant="outlined" color="error" @click="deleteDialog?.open(item)">
               <v-icon>mdi-delete</v-icon>
             </v-btn>
           </td>
@@ -88,45 +84,37 @@
       </div>
     </div>
 
-    <EditDialog ref="editDialog" @saved="$emit('refresh')" />
-    <DeleteDialog ref="deleteDialog" @deleted="$emit('refresh')" />
+    <EditDialog ref="editDialog" @saved="emit('refresh')" />
+    <DeleteDialog ref="deleteDialog" @deleted="emit('refresh')" />
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import EditDialog from './Edit.vue'
 import DeleteDialog from './Delete.vue'
 
-export default {
-  name: 'DataTable',
-  components: { EditDialog, DeleteDialog },
-  props: {
-    items: { type: Array, default: () => [] },
-    loading: { type: Boolean, default: false },
-    errorMsg: { type: String, default: '' },
-  },
-  emits: ['refresh'],
-  data() {
-    return {
-      currentPage: 1,
-      pageSize: 5,
-    }
-  },
-  computed: {
-    totalPages() {
-      return Math.max(1, Math.ceil(this.items.length / this.pageSize))
-    },
-    pagedItems() {
-      const start = (this.currentPage - 1) * this.pageSize
-      return this.items.slice(start, start + this.pageSize)
-    },
-  },
-  watch: {
-    items() {
-      this.currentPage = 1
-    },
-  },
-}
+const props = defineProps<{
+  items: any[]
+  loading: boolean
+  errorMsg: string
+}>()
+
+const emit = defineEmits<{ refresh: [] }>()
+
+const editDialog = ref<InstanceType<typeof EditDialog>>()
+const deleteDialog = ref<InstanceType<typeof DeleteDialog>>()
+
+const currentPage = ref(1)
+const pageSize = ref(5)
+
+const totalPages = computed(() => Math.max(1, Math.ceil(props.items.length / pageSize.value)))
+const pagedItems = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return props.items.slice(start, start + pageSize.value)
+})
+
+watch(() => props.items, () => { currentPage.value = 1 })
 </script>
 
 <style scoped>
@@ -137,18 +125,15 @@ export default {
   margin-top: 16px;
   font-size: 14px;
 }
-
 .page-size {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .page-info {
   flex: 1;
   text-align: center;
 }
-
 .page-controls {
   display: flex;
   align-items: center;

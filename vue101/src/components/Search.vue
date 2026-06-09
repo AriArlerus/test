@@ -1,11 +1,10 @@
 <template>
   <v-container fluid class="pa-4">
     <div class="top-bar">
-      <v-btn color="primary" @click="$refs.addDialog.open()">+ เพิ่มข้อมูล</v-btn>
+      <v-btn color="primary" @click="addDialog?.open()">+ เพิ่มข้อมูล</v-btn>
     </div>
 
     <v-expansion-panels variant="accordion" multiple>
-      <!-- Panel 1: ค้นหาข้อมูล -->
       <v-expansion-panel>
         <v-expansion-panel-title class="panel-title">
           ค้นหาข้อมูลสายงาน
@@ -42,7 +41,6 @@
         </v-expansion-panel-text>
       </v-expansion-panel>
 
-      <!-- Panel 2: ตารางข้อมูล -->
       <v-expansion-panel>
         <v-expansion-panel-title class="panel-title">
           ข้อมูลสายงาน
@@ -62,55 +60,53 @@
   </v-container>
 </template>
 
-<script>
+<script setup lang="ts">
 import axios from 'axios'
+import { ref } from 'vue'
 import DataTable from './Table.vue'
 import AddDialog from './Add.vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
-export default {
-  name: 'SearchPanel',
-  components: { DataTable, AddDialog },
-  data() {
-    return {
-      searchText: '',
-      selectedStatus: '',
-      statusOptions: [
-        { label: 'ทั้งหมด', value: '' },
-        { label: 'ใช้งาน', value: 'A' },
-        { label: 'ไม่ใช้งาน', value: 'I' },
-      ],
-      items: [],
-      loading: false,
-      errorMsg: '',
-    }
-  },
-  created() {
-    this.fetchData()
-  },
-  methods: {
-    async fetchData() {
-      this.loading = true
-      this.errorMsg = ''
-      try {
-        const res = await axios.get(API_URL, {
-          params: { keyword: this.searchText, status: this.selectedStatus }
-        })
-        this.items = res.data
-      } catch (err) {
-        this.errorMsg = 'ไม่สามารถเชื่อมต่อ server ได้: ' + err.message
-      } finally {
-        this.loading = false
-      }
-    },
-    clearSearch() {
-      this.searchText = ''
-      this.selectedStatus = ''
-      this.fetchData()
-    },
-  },
+interface StatusOption {
+  label: string
+  value: string
 }
+
+const addDialog = ref<InstanceType<typeof AddDialog>>()
+const searchText = ref('')
+const selectedStatus = ref('')
+const statusOptions: StatusOption[] = [
+  { label: 'ทั้งหมด', value: '' },
+  { label: 'ใช้งาน', value: 'A' },
+  { label: 'ไม่ใช้งาน', value: 'I' },
+]
+const items = ref<any[]>([])
+const loading = ref(false)
+const errorMsg = ref('')
+
+async function fetchData() {
+  loading.value = true
+  errorMsg.value = ''
+  try {
+    const res = await axios.get(API_URL, {
+      params: { keyword: searchText.value, status: selectedStatus.value }
+    })
+    items.value = res.data
+  } catch (err: any) {
+    errorMsg.value = 'ไม่สามารถเชื่อมต่อ server ได้: ' + err.message
+  } finally {
+    loading.value = false
+  }
+}
+
+function clearSearch() {
+  searchText.value = ''
+  selectedStatus.value = ''
+  fetchData()
+}
+
+fetchData()
 </script>
 
 <style scoped>

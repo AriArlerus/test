@@ -21,46 +21,44 @@
   </v-dialog>
 </template>
 
-<script>
+<script setup lang="ts">
 import axios from 'axios'
+import { ref } from 'vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
-export default {
-  name: 'DeleteDialog',
-  emits: ['deleted'],
-  data() {
-    return {
-      dialog: false,
-      deleting: false,
-      target: null,
-    }
-  },
-  methods: {
-    open(item) {
-      this.target = item
-      this.dialog = true
-    },
-    close() {
-      this.dialog = false
-      this.target = null
-    },
-    async confirmDelete() {
-      this.deleting = true
-      try {
-        await axios.delete(`${API_URL}/${this.target.POSI_ID}`, {
-          data: { UPDATED_BY: 'user' }
-        })
-        this.$emit('deleted')
-        this.close()
-      } catch (err) {
-        alert('ลบไม่สำเร็จ: ' + err.message)
-      } finally {
-        this.deleting = false
-      }
-    },
-  },
+const emit = defineEmits<{ deleted: [] }>()
+
+const dialog = ref(false)
+const deleting = ref(false)
+const target = ref<any>(null)
+
+function open(item: any) {
+  target.value = item
+  dialog.value = true
 }
+
+function close() {
+  dialog.value = false
+  target.value = null
+}
+
+async function confirmDelete() {
+  deleting.value = true
+  try {
+    await axios.delete(`${API_URL}/${target.value.POSI_ID}`, {
+      data: { UPDATED_BY: 'user' }
+    })
+    emit('deleted')
+    close()
+  } catch (err: any) {
+    alert('ลบไม่สำเร็จ: ' + err.message)
+  } finally {
+    deleting.value = false
+  }
+}
+
+defineExpose({ open })
 </script>
 
 <style scoped>
