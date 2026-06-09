@@ -11,8 +11,8 @@
               <v-text-field v-model="form.POSI_CODE" placeholder="ระบุรหัสข้อมูล" density="compact" variant="outlined" hide-details="auto" :rules="[rules.required]" />
             </v-col>
             <v-col cols="6">
-              <label class="field-label">ชื่อย่อ (TH)</label>
-              <v-text-field v-model="form.POSI_NAME_SHORT_TH" placeholder="ระบุชื่อย่อ (TH)" density="compact" variant="outlined" hide-details />
+              <label class="field-label">ชื่อย่อ (TH) <span class="required">*</span></label>
+              <v-text-field v-model="form.POSI_NAME_SHORT_TH" placeholder="ระบุชื่อย่อ (TH)" density="compact" variant="outlined" hide-details="auto" :rules="[rules.required]" />
             </v-col>
             <v-col cols="6">
               <label class="field-label">ชื่อย่อ (EN)</label>
@@ -47,13 +47,13 @@
   </v-dialog>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import axios from 'axios'
 import { ref, reactive } from 'vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
-const emit = defineEmits<{ saved: [] }>()
+const emit = defineEmits(['saved'])
 
 const dialog = ref(false)
 const isFormValid = ref(false)
@@ -76,7 +76,7 @@ const statusOptions = [
 ]
 
 const rules = {
-  required: (v: string) => !!v || 'กรุณากรอกข้อมูล',
+  required: (v) => !!v || 'กรุณากรอกข้อมูล',
 }
 
 function open() {
@@ -96,7 +96,7 @@ async function save() {
     await axios.post(API_URL, { ...form, CREATED_BY: 'user' })
     emit('saved')
     close()
-  } catch (err: any) {
+  } catch (err) {
     alert('บันทึกไม่สำเร็จ: ' + err.message)
   } finally {
     saving.value = false

@@ -25,7 +25,7 @@
         <tr v-else-if="pagedItems.length === 0">
           <td colspan="8" class="text-center py-4">ไม่พบข้อมูล</td>
         </tr>
-        <tr v-for="(item, index) in pagedItems" :key="item.POSI_ID">
+        <tr v-else v-for="(item, index) in pagedItems" :key="item.POSI_ID">
           <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
           <td>{{ item.POSI_CODE }}</td>
           <td>{{ item.POSI_NAME_SHORT_TH }}</td>
@@ -151,21 +151,20 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import axios from 'axios'
 import { ref, computed, watch, reactive } from 'vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
-const props = defineProps<{
-  items: any[]
-  loading: boolean
-  errorMsg: string
-}>()
+const props = defineProps({
+  items: Array,
+  loading: Boolean,
+  errorMsg: String,
+})
 
-const emit = defineEmits<{ refresh: [] }>()
+const emit = defineEmits(['refresh'])
 
-// ── Table ──────────────────────────────────────────
 const currentPage = ref(1)
 const pageSize = ref(5)
 
@@ -177,12 +176,11 @@ const pagedItems = computed(() => {
 
 watch(() => props.items, () => { currentPage.value = 1 })
 
-// ── Edit ──────────────────────────────────────────
 const editDialog = ref(false)
 const isFormValid = ref(false)
 const saving = ref(false)
 const editFormRef = ref()
-const posiId = ref<number | null>(null)
+const posiId = ref(null)
 
 const editForm = reactive({
   POSI_CODE: '',
@@ -199,9 +197,9 @@ const statusOptions = [
   { label: 'ไม่ใช้งาน', value: 'I' },
 ]
 
-const rules = { required: (v: string) => !!v || 'กรุณากรอกข้อมูล' }
+const rules = { required: (v) => !!v || 'กรุณากรอกข้อมูล' }
 
-function openEdit(item: any) {
+function openEdit(item) {
   posiId.value = item.POSI_ID
   editForm.POSI_CODE = item.POSI_CODE ?? ''
   editForm.POSI_NAME_SHORT_TH = item.POSI_NAME_SHORT_TH ?? ''
@@ -226,7 +224,7 @@ async function saveEdit() {
     await axios.put(`${API_URL}/${posiId.value}`, { ...editForm, UPDATED_BY: 'user' })
     emit('refresh')
     closeEdit()
-  } catch (err: any) {
+  } catch (err) {
     alert('บันทึกไม่สำเร็จ: ' + err.message)
   } finally {
     saving.value = false
@@ -236,9 +234,9 @@ async function saveEdit() {
 // ── Delete ─────────────────────────────────────────
 const deleteDialog = ref(false)
 const deleting = ref(false)
-const deleteTarget = ref<any>(null)
+const deleteTarget = ref(null)
 
-function openDelete(item: any) {
+function openDelete(item) {
   deleteTarget.value = item
   deleteDialog.value = true
 }
@@ -256,7 +254,7 @@ async function confirmDelete() {
     })
     emit('refresh')
     closeDelete()
-  } catch (err: any) {
+  } catch (err) {
     alert('ลบไม่สำเร็จ: ' + err.message)
   } finally {
     deleting.value = false

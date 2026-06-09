@@ -60,7 +60,7 @@
   </v-container>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import axios from 'axios'
 import { ref } from 'vue'
 import DataTable from './View.vue'
@@ -68,20 +68,15 @@ import AddDialog from './Add.vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
-interface StatusOption {
-  label: string
-  value: string
-}
-
-const addDialog = ref<InstanceType<typeof AddDialog>>()
+const addDialog = ref(null)
 const searchText = ref('')
 const selectedStatus = ref('')
-const statusOptions: StatusOption[] = [
+const statusOptions = [
   { label: 'ทั้งหมด', value: '' },
   { label: 'ใช้งาน', value: 'A' },
   { label: 'ไม่ใช้งาน', value: 'I' },
 ]
-const items = ref<any[]>([])
+const items = ref([])
 const loading = ref(false)
 const errorMsg = ref('')
 
@@ -93,7 +88,7 @@ async function fetchData() {
       params: { keyword: searchText.value, status: selectedStatus.value }
     })
     items.value = res.data
-  } catch (err: any) {
+  } catch (err) {
     errorMsg.value = 'ไม่สามารถเชื่อมต่อ server ได้: ' + err.message
   } finally {
     loading.value = false
