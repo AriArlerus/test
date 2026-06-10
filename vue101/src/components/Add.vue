@@ -11,12 +11,12 @@
               <v-text-field v-model="form.POSI_CODE" placeholder="ระบุรหัสข้อมูล" density="compact" variant="outlined" hide-details="auto" :rules="[rules.required]" />
             </v-col>
             <v-col cols="6">
-              <label class="field-label">ชื่อย่อ (TH) <span class="required">*</span></label>
-              <v-text-field v-model="form.POSI_NAME_SHORT_TH" placeholder="ระบุชื่อย่อ (TH)" density="compact" variant="outlined" hide-details="auto" :rules="[rules.required]" />
+              <label class="field-label">ชื่อ (TH) <span class="required">*</span></label>
+              <v-text-field v-model="form.POSI_NAME_SHORT_TH" placeholder="ระบุชื่อ (TH)" density="compact" variant="outlined" hide-details="auto" :rules="[rules.required]" />
             </v-col>
             <v-col cols="6">
-              <label class="field-label">ชื่อย่อ (EN)</label>
-              <v-text-field v-model="form.POSI_NAME_SHORT_EN" placeholder="ระบุชื่อย่อ (EN)" density="compact" variant="outlined" hide-details />
+              <label class="field-label">ชื่อ (EN)</label>
+              <v-text-field v-model="form.POSI_NAME_SHORT_EN" placeholder="ระบุชื่อ (EN)" density="compact" variant="outlined" hide-details />
             </v-col>
             <v-col cols="6">
               <label class="field-label">สายงาน (TH) <span class="required">*</span></label>
@@ -53,13 +53,15 @@ import { ref, reactive } from 'vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
+// emit 'saved' ไปให้ parent เพื่อให้โหลดข้อมูลใหม่หลังบันทึก
 const emit = defineEmits(['saved'])
 
-const dialog = ref(false)
-const isFormValid = ref(false)
-const saving = ref(false)
-const formRef = ref()
+const dialog = ref(false)      // ควบคุมการเปิด/ปิด dialog
+const isFormValid = ref(false) // สถานะความถูกต้องของฟอร์ม
+const saving = ref(false)      // แสดง loading ขณะกำลังบันทึก
+const formRef = ref()          // ref ของ v-form สำหรับ validate/reset
 
+// ข้อมูลในฟอร์มเพิ่มข้อมูลใหม่ RECORD_STATUS เริ่มต้นเป็น 'A' (ใช้งาน)
 const form = reactive({
   POSI_CODE: '',
   POSI_NAME_SHORT_TH: '',
@@ -79,15 +81,18 @@ const rules = {
   required: (v) => !!v || 'กรุณากรอกข้อมูล',
 }
 
+// เปิด dialog (ถูกเรียกจาก parent ผ่าน defineExpose)
 function open() {
   dialog.value = true
 }
 
+// ปิด dialog และล้างข้อมูลในฟอร์ม
 function close() {
   dialog.value = false
   formRef.value?.reset()
 }
 
+// ตรวจสอบฟอร์มแล้วส่งข้อมูลไป POST API
 async function save() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
@@ -103,6 +108,7 @@ async function save() {
   }
 }
 
+// เปิดเผยฟังก์ชัน open ให้ parent component เรียกใช้ได้
 defineExpose({ open })
 </script>
 

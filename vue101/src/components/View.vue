@@ -8,8 +8,8 @@
         <tr>
           <th>ลำดับ</th>
           <th>รหัสข้อมูล</th>
-          <th>ชื่อย่อ (TH)</th>
-          <th>ชื่อย่อ (EN)</th>
+          <th>ชื่อ (TH)</th>
+          <th>ชื่อ (EN)</th>
           <th>สายงาน (TH)</th>
           <th>สายงาน (EN)</th>
           <th>สถานะการใช้งาน</th>
@@ -92,12 +92,12 @@
                 <v-text-field v-model="editForm.POSI_CODE" placeholder="ระบุรหัสข้อมูล" density="compact" variant="outlined" hide-details="auto" :rules="[rules.required]" />
               </v-col>
               <v-col cols="6">
-                <label class="field-label">ชื่อย่อ (TH)</label>
-                <v-text-field v-model="editForm.POSI_NAME_SHORT_TH" placeholder="ระบุชื่อย่อ (TH)" density="compact" variant="outlined" hide-details />
+                <label class="field-label">ชื่อ (TH)</label>
+                <v-text-field v-model="editForm.POSI_NAME_SHORT_TH" placeholder="ระบุชื่อ (TH)" density="compact" variant="outlined" hide-details />
               </v-col>
               <v-col cols="6">
-                <label class="field-label">ชื่อย่อ (EN)</label>
-                <v-text-field v-model="editForm.POSI_NAME_SHORT_EN" placeholder="ระบุชื่อย่อ (EN)" density="compact" variant="outlined" hide-details />
+                <label class="field-label">ชื่อ (EN)</label>
+                <v-text-field v-model="editForm.POSI_NAME_SHORT_EN" placeholder="ระบุชื่อ (EN)" density="compact" variant="outlined" hide-details />
               </v-col>
               <v-col cols="6">
                 <label class="field-label">สายงาน (TH) <span class="required">*</span></label>
@@ -157,30 +157,38 @@ import { ref, computed, watch, reactive } from 'vue'
 
 const API_URL = 'http://localhost:3000/api/mas-position'
 
+// รับ props จาก parent: รายการข้อมูล, สถานะโหลด, และข้อความ error
 const props = defineProps({
   items: Array,
   loading: Boolean,
   errorMsg: String,
 })
 
+// emit 'refresh' ให้ parent โหลดข้อมูลใหม่หลังแก้ไข/ลบ
 const emit = defineEmits(['refresh'])
 
+// ── Pagination ──────────────────────────────────────
 const currentPage = ref(1)
-const pageSize = ref(5)
+const pageSize = ref(5) // จำนวนรายการต่อหน้า
 
+// คำนวณจำนวนหน้าทั้งหมด (ขั้นต่ำ 1 หน้า)
 const totalPages = computed(() => Math.max(1, Math.ceil(props.items.length / pageSize.value)))
+
+// ตัดข้อมูลเฉพาะหน้าปัจจุบันมาแสดง
 const pagedItems = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   return props.items.slice(start, start + pageSize.value)
 })
 
+// เมื่อข้อมูลเปลี่ยน (เช่น ค้นหาใหม่) ให้กลับไปหน้าที่ 1
 watch(() => props.items, () => { currentPage.value = 1 })
 
+// ── Edit ────────────────────────────────────────────
 const editDialog = ref(false)
 const isFormValid = ref(false)
-const saving = ref(false)
+const saving = ref(false)      // แสดง loading ขณะบันทึก
 const editFormRef = ref()
-const posiId = ref(null)
+const posiId = ref(null)       // เก็บ ID ของแถวที่กำลังแก้ไข
 
 const editForm = reactive({
   POSI_CODE: '',
@@ -199,6 +207,8 @@ const statusOptions = [
 
 const rules = { required: (v) => !!v || 'กรุณากรอกข้อมูล' }
 
+// เปิด dialog แก้ไข พร้อมนำข้อมูลของแถวนั้นมาเติมในฟอร์ม
+// START_DATE ตัดเฉพาะ 10 ตัวแรก (yyyy-MM-dd) เพราะ API คืน ISO string
 function openEdit(item) {
   posiId.value = item.POSI_ID
   editForm.POSI_CODE = item.POSI_CODE ?? ''
@@ -211,11 +221,13 @@ function openEdit(item) {
   editDialog.value = true
 }
 
+// ปิด dialog แก้ไขและล้างฟอร์ม
 function closeEdit() {
   editDialog.value = false
   editFormRef.value?.reset()
 }
 
+// ตรวจสอบฟอร์มแล้วส่ง PUT ไปอัปเดตข้อมูล
 async function saveEdit() {
   const { valid } = await editFormRef.value.validate()
   if (!valid) return
@@ -233,19 +245,22 @@ async function saveEdit() {
 
 // ── Delete ─────────────────────────────────────────
 const deleteDialog = ref(false)
-const deleting = ref(false)
-const deleteTarget = ref(null)
+const deleting = ref(false)        // แสดง loading ขณะลบ
+const deleteTarget = ref(null)     // เก็บข้อมูลแถวที่จะลบ เพื่อแสดงยืนยัน
 
+// เปิด dialog ยืนยันการลบ
 function openDelete(item) {
   deleteTarget.value = item
   deleteDialog.value = true
 }
 
+// ปิด dialog ลบและเคลียร์ target
 function closeDelete() {
   deleteDialog.value = false
   deleteTarget.value = null
 }
 
+// ยืนยันลบ: ส่ง DELETE ไป API (Soft Delete ที่ backend)
 async function confirmDelete() {
   deleting.value = true
   try {
